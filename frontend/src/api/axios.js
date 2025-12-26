@@ -1,10 +1,9 @@
 import axios from 'axios';
 
 const API = axios.create({
-  baseURL: 'http://localhost:5000/api/auth', // backend auth routes
+  baseURL: 'http://localhost:5000/api/auth',
 });
 
-// Attach token to requests
 API.interceptors.request.use((req) => {
   const token = localStorage.getItem('token');
   if (token) {
@@ -13,5 +12,16 @@ API.interceptors.request.use((req) => {
   return req;
 });
 
-export default API;
+// Auto logout on 401
+API.interceptors.response.use(
+  (res) => res,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem('token');
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
 
+export default API;
